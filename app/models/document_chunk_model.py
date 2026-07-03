@@ -4,6 +4,7 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy import ForeignKey
 from sqlalchemy import DateTime
+from sqlalchemy import TIMESTAMP
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -22,18 +23,41 @@ class DocumentChunk(Base):
         Integer,
         ForeignKey(
             "documents.id_document"
-        )
+        ),
+        nullable=False
     )
 
-    chunk_text=Column(
-        Text
+    content=Column(
+        Text,
+        nullable=False
     )
 
     chunk_index=Column(
-        Integer
+        Integer,
+        nullable=False
     )
 
     created_at=Column(
-        DateTime,
+        TIMESTAMP,
         server_default=func.now()
+    )
+
+    bab=Column(
+        Text,
+        nullable=True
+    )
+
+    pasal=Column(
+        Text,
+        nullable=True
+    )
+
+    ayat=Column(
+        Integer,
+        nullable=True
+    )
+
+    halaman=Column(
+        Integer,
+        nullable=True
     )

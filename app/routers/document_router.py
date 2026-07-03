@@ -12,7 +12,8 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db
 
 from app.schemas.document_schema import (
-    DocumentResponse
+    DocumentResponse,
+    UploadResponse
 )
 
 from app.services.document_service import (
@@ -24,7 +25,8 @@ from app.services.document_service import (
     download_document,
     preview_document,
     update_document,
-    delete_document
+    delete_document,
+    ingest_pdf
 )
 
 router=APIRouter(
@@ -32,26 +34,26 @@ router=APIRouter(
     tags=["Documents"]
 )
 
-@router.post("/upload")
-def upload(
+@router.post("/upload", response_model=UploadResponse)
+async def upload(
 
-    title:str=Form(...),
-    id_category:int=Form(...),
-    user_id:int=Form(...),
-    file:UploadFile=File(...),
-    db:Session=Depends(
-        get_db
-    )
+    file: UploadFile = File(...),
+    title: str = Form(None),
+    user_id: int = Form(0),
+    id_category: int = Form(0),
 ):
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Hanya file PDF yang didukung")
 
-    return upload_document(
+    content = await file.read()
+    try:
+        # Use title from form if provided, otherwise use filename
+        doc_title = title if title else file.filename
+        result = ingest_pdf(content, file.filename, title=doc_title, user_id=user_id, id_category=id_category)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-        db,
-        title,
-        id_category,
-        file,
-        user_id
-    )
+    return UploadResponse(**result)
 
 @router.get("/")
 def get_all(

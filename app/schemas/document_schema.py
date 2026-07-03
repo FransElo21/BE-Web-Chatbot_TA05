@@ -23,3 +23,11 @@ class UpdateDocumentRequest(
 ):
     title:Optional[str]=None
     id_category:Optional[int]=None
+
+
+class UploadResponse(
+    BaseModel
+):
+    message:str
+    document_id:int
+    total_chunks:int
